@@ -1,4 +1,4 @@
-#Welcome To LaypPad
+# Welcome To LaypPad
 This is an application that uses CRUD with adding files such as images, videos and text
 
 # Group Mates
