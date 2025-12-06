@@ -1,12 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Drawer } from 'expo-router/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../supabaseClient';
 import { DrawerToggleButton } from '@react-navigation/drawer';
+import { ActivityIndicator, View } from 'react-native';
 
 export default function DrawerLayout() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   // 🔒 If not logged in, don't stay in (tabs)
   useEffect(() => {
@@ -15,9 +17,18 @@ export default function DrawerLayout() {
       if (!data.user) {
         router.replace('/sign_in'); // underscore to match app/sign_in.tsx
       }
+      setIsLoading(false);
     };
     checkAuth();
-  }, []);
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <Drawer

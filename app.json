@@ -4,8 +4,7 @@
     "slug": "LaypPad",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/2.png",
-    "scheme": "layppad",
+    "icon": "./assets/images/LOGO.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,36 +12,45 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/2.png",
-        "backgroundImage": "./assets/images/2.png",
-        "monochromeImage": "./assets/images/2.png"
+        "foregroundImage": "./assets/images/LOGO.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.jacob_anselmo.LaypPad"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/2.png"
+      "favicon": "./assets/images/LOGO.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/2.png",
-          "imageWidth": 200,
+          "image": "./assets/images/Text.png",
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "imageWidth": 700
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-video",
+      "expo-web-browser",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "62731604-df30-4a4a-95c0-db084fbb5e8f"
+      }
     }
   }
 }

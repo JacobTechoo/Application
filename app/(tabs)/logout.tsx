@@ -12,7 +12,7 @@ export default function LogoutScreen() {
       router.replace('/sign_in');
     };
     doLogout();
-  }, []);
+  }, [router]);
 
   return (
     <View style={styles.container}>

@@ -6,20 +6,14 @@ import {
   Button,
   StyleSheet,
   ActivityIndicator,
-  Image,
-  Pressable,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../supabaseClient';
 
 export default function ProfileScreen() {
   const [email, setEmail] = useState<string | null>(null);
   const [username, setUsername] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,7 +31,6 @@ export default function ProfileScreen() {
 
         const meta = (data.user.user_metadata as any) || {};
         setUsername(meta.username ?? '');
-        setAvatarUrl(meta.avatar_url ?? null);
       }
 
       setLoading(false);
@@ -58,7 +51,6 @@ export default function ProfileScreen() {
     const { error } = await supabase.auth.updateUser({
       data: {
         username: username.trim(),
-        avatar_url: avatarUrl ?? null,
       },
     });
 
@@ -72,95 +64,6 @@ export default function ProfileScreen() {
     setSaving(false);
   };
 
-  const handlePickAvatar = async () => {
-    setMessage(null);
-
-    // ask permission
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      setMessage('Permission to access photos is required.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (result.canceled || !result.assets || result.assets.length === 0) {
-      return;
-    }
-
-    const asset = result.assets[0];
-    if (!asset.uri) return;
-
-    setUploadingAvatar(true);
-
-    try {
-      // get current user id
-      const { data: userData, error } = await supabase.auth.getUser();
-      if (error || !userData.user) {
-        setMessage('Not logged in.');
-        setUploadingAvatar(false);
-        return;
-      }
-
-      const userId = userData.user.id;
-
-      // convert file uri → blob
-      const response = await fetch(asset.uri);
-      const blob = await response.blob();
-
-      const fileExt = asset.uri.split('.').pop() || 'jpg';
-      const fileName = `${userId}-${Date.now()}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`;
-
-      // upload to storage bucket "avatars"
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, blob, {
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.log('Upload error:', uploadError);
-        setMessage('Error uploading avatar: ' + uploadError.message);
-        setUploadingAvatar(false);
-        return;
-      }
-
-      // get public URL
-      const { data: publicData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      const publicUrl = publicData.publicUrl;
-      setAvatarUrl(publicUrl);
-
-      // save to user_metadata immediately
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          username: username.trim() || undefined,
-          avatar_url: publicUrl,
-        },
-      });
-
-      if (updateError) {
-        console.log('Error saving avatar URL:', updateError);
-        setMessage('Avatar uploaded, but failed to save profile.');
-      } else {
-        setMessage('Avatar updated ✅');
-      }
-    } catch (e: any) {
-      console.log('Avatar upload exception:', e);
-      setMessage('Unexpected error during upload.');
-    }
-
-    setUploadingAvatar(false);
-  };
-
   if (loading) {
     return (
       <View style={styles.center}>
@@ -170,27 +73,21 @@ export default function ProfileScreen() {
     );
   }
 
+  const initial = username.trim().charAt(0).toUpperCase() || '🙂';
+
   return (
     <View style={styles.container}>
-      {/* Avatar */}
+      {/* Avatar + username display */}
       <View style={styles.avatarWrapper}>
-        {avatarUrl ? (
-          <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
-        ) : (
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarEmoji}>🙂</Text>
-          </View>
-        )}
-
-        <Pressable
-          style={styles.changePhotoButton}
-          onPress={handlePickAvatar}
-          disabled={uploadingAvatar}
-        >
-          <Text style={styles.changePhotoText}>
-            {uploadingAvatar ? 'Uploading...' : 'Change photo'}
+        <View style={styles.avatarCircle}>
+          <Text style={styles.avatarEmoji}>
+            {username.trim() ? initial : '🙂'}
           </Text>
-        </Pressable>
+        </View>
+
+        <Text style={styles.profileUsername}>
+          {username.trim() || 'Set your username'}
+        </Text>
       </View>
 
       <Text style={styles.title}>Your Profile</Text>
@@ -201,7 +98,6 @@ export default function ProfileScreen() {
         <Text style={styles.readOnlyText}>{email ?? 'Unknown'}</Text>
       </View>
 
-      {/* Username */}
       <Text style={styles.label}>Username</Text>
       <TextInput
         style={styles.input}
@@ -249,22 +145,11 @@ const styles = StyleSheet.create({
   avatarEmoji: {
     fontSize: 42,
   },
-  avatarImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 999,
-  },
-  changePhotoButton: {
+  profileUsername: {
     marginTop: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: '#2563eb',
-  },
-  changePhotoText: {
-    color: '#ffffff',
-    fontSize: 13,
+    fontSize: 18,
     fontWeight: '600',
+    color: '#111827',
   },
   title: {
     fontSize: 22,
