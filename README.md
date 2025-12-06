@@ -1,3 +1,15 @@
+#Welcome To LaypPad
+This is an application that uses CRUD with adding files such as images, videos and text
+
+# Group Mates
+- Jacob Josh A. Tubo
+- John Kevin T. Ojario
+- Alejandro III Joyohoy
+- McWayne Allyson Abante
+- Nic Guiller Quilnet
+- Edsan John Leguro
+- Edgar Jr. Leguro
+  
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
